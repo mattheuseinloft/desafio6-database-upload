@@ -1,7 +1,6 @@
-import { EntityRepository, Repository, getRepository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 
 import Transaction from '../models/Transaction';
-import Category from '../models/Category';
 
 interface Balance {
   income: number;
@@ -11,6 +10,16 @@ interface Balance {
 
 @EntityRepository(Transaction)
 class TransactionsRepository extends Repository<Transaction> {
+  public async all(): Promise<Transaction[]> {
+    const transactions = await this.find();
+
+    transactions.forEach(transaction => {
+      delete transaction.category_id;
+    });
+
+    return transactions;
+  }
+
   public async getBalance(): Promise<Balance> {
     const transactions = await this.find();
 

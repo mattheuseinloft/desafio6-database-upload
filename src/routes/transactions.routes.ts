@@ -6,24 +6,20 @@ import CreateTransactionService from '../services/CreateTransactionService';
 // import DeleteTransactionService from '../services/DeleteTransactionService';
 // import ImportTransactionsService from '../services/ImportTransactionsService';
 
-import CreateCategoryService from '../services/CreateCategoryService';
-
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
   const transactionsRepository = getCustomRepository(TransactionsRepository);
-  const transactions = await transactionsRepository.find();
+  const transactions = await transactionsRepository.all();
 
-  return response.json(transactions);
+  const balance = (await transactionsRepository.getBalance()) || {};
+
+  return response.json({ transactions, balance });
 });
 
 transactionsRouter.post('/', async (request, response) => {
   try {
     const { title, value, type, category } = request.body;
-
-    const createCategory = new CreateCategoryService();
-
-    const categoryObject = await createCategory.execute({ title: category });
 
     const createTransaction = new CreateTransactionService();
 
@@ -31,11 +27,8 @@ transactionsRouter.post('/', async (request, response) => {
       title,
       value,
       type,
-      category_id: categoryObject.id,
+      category,
     });
-
-    delete transaction.category_id;
-    transaction.category = categoryObject;
 
     return response.json(transaction);
   } catch (err) {
