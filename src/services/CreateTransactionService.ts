@@ -1,6 +1,6 @@
 import { getCustomRepository } from 'typeorm';
 
-// import AppError from '../errors/AppError';
+import AppError from '../errors/AppError';
 
 import Transaction from '../models/Transaction';
 import TransactionsRepository from '../repositories/TransactionsRepository';
@@ -22,7 +22,7 @@ class CreateTransactionService {
     category,
   }: Request): Promise<Transaction> {
     if (!['income', 'outcome'].includes(type)) {
-      throw Error('Transaction type is invalid');
+      throw new AppError('Transaction type is invalid');
     }
 
     const transactionsRepository = getCustomRepository(TransactionsRepository);
@@ -32,7 +32,7 @@ class CreateTransactionService {
     const hasInvalidBalance = type === 'outcome' && total < value;
 
     if (hasInvalidBalance) {
-      throw Error('This transaction extrapolates the balance');
+      throw new AppError('This transaction extrapolates the balance');
     }
 
     const createCategory = new CreateCategoryService();
