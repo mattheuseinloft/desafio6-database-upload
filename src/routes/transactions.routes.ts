@@ -6,6 +6,8 @@ import CreateTransactionService from '../services/CreateTransactionService';
 // import DeleteTransactionService from '../services/DeleteTransactionService';
 // import ImportTransactionsService from '../services/ImportTransactionsService';
 
+import CreateCategoryService from '../services/CreateCategoryService';
+
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
@@ -19,14 +21,21 @@ transactionsRouter.post('/', async (request, response) => {
   try {
     const { title, value, type, category } = request.body;
 
+    const createCategory = new CreateCategoryService();
+
+    const categoryObject = await createCategory.execute({ title: category });
+
     const createTransaction = new CreateTransactionService();
 
     const transaction = await createTransaction.execute({
       title,
       value,
       type,
-      category,
+      category_id: categoryObject.id,
     });
+
+    delete transaction.category_id;
+    transaction.category = categoryObject;
 
     return response.json(transaction);
   } catch (err) {
